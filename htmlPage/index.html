@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 
 <html>
-
 <head>
     <meta charset="utf-8">
     <title>GitHub Repository Analyser </title>
@@ -15,15 +14,22 @@
     </div>
 
     <div id="retrievedRepositories">
-		
+		<select size="20" name="retrievedRepositoriesList"
+            id="retrievedRepositoriesList">
+		</select> 
     </div>
 
+
     <div id="chooseAnalyse">
+		<input type="radio" name="groupA" value="analyse1" id="committers">       List of committers (users) for this project <br>
+		<input type="radio" name="groupA" value="analyse2" id="committersImpact"> The impact of each user on the project      <br>
+		<input type="radio" name="groupA" value="analyse3" id="commitTimeline">   The projection of commits on a timeline     <br>
     </div>
 
     <div id="showGraphic">
     </div>
 
+    <script src="githubServiceCall.js"></script>
     <script src="personalScript.js"></script>
 </body>
 
