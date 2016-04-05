@@ -1,9 +1,22 @@
 function loadCharts(repo) {
-	google.charts.setOnLoadCallback(drawImpactContributorChart);
-	google.charts.setOnLoadCallback(drawCommitsTimelineChart);
+    var mapCommitters = {};
+    
+    requestListRepositories(getRepoSearchURL(repoName), function(data) {
+        $.each(data.items, function(i, item) {
+            var author = item.author; 
+            if(author in mapCommitters) {
+                mapCommitters[author] = mapCommitters[author] + 1;
+            }
+            else {
+                mapCommitters[author] = 1;
+            }
+        });
+
+    google.charts.setOnLoadCallback(drawImpactContributorChart(mapCommitters));
+	google.charts.setOnLoadCallback(drawCommitsTimelineChart());
 }
 
-function drawImpactContributorChart() {
+function drawImpactContributorChart(rows) {
         var data = new google.visualization.DataTable();
         data.addColumn('string', 'Topping');
         data.addColumn('number', 'Slices');
