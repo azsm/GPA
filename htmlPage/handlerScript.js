@@ -1,3 +1,15 @@
+$(function() {
+        console.log( "ready!" );
+
+
+        $('#retrievedRepositoriesList').hide();
+
+        // Load the Visualization API and the corechart package.
+        google.charts.load('current', {'packages':['corechart']});
+});
+
+
+
 $('#searchRepository').submit(function(event){
     var repoName = $('#repositoryName').val();
     requestListRepositories(getRepoSearchURL(repoName), function(data) {
@@ -37,25 +49,8 @@ $("#retrievedRepositories").click(function() {
 		$('#repoUsers').html(outhtml);
 
   	});
+
+    loadCharts(selectedRepo);
 });
-
-/*
-$("#committersImpact").click(function() {
-    if($(this).is(":checked")) 
-    {
-        alert('The user want commits impact');
-    }
-});
-
-$("#commitTimeline").click(function() {
-    if($(this).is(":checked")) 
-    {
-        alert('The user want commit timeline');
-    }
-});
-*/
-
-
-
 
 
