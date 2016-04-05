@@ -9,28 +9,22 @@
 
 <body>
     <div>  
-        Repository name:<input id="repositoryName" type="text"/>
-        <input id="searchRepository" type="submit" value="Go"> 
+        <form id="searchRepository">
+            Repository name : <input id="repositoryName" type="text"/>
+            <input type="submit" value="Go"> 
+        </form>
     </div>
 
     <div id="retrievedRepositories">
-		<select size="20" name="retrievedRepositoriesList"
-            id="retrievedRepositoriesList">
+		<select size="20" name="retrievedRepositoriesList" id="retrievedRepositoriesList">
 		</select> 
     </div>
 
-
-    <div id="chooseAnalyse">
-		<input type="radio" name="groupA" value="analyse1" id="committers">       List of committers (users) for this project <br>
-		<input type="radio" name="groupA" value="analyse2" id="committersImpact"> The impact of each user on the project      <br>
-		<input type="radio" name="groupA" value="analyse3" id="commitTimeline">   The projection of commits on a timeline     <br>
-    </div>
-
-    <div id="showGraphic">
+    <div id="repoUsers">
     </div>
 
     <script src="githubServiceCall.js"></script>
-    <script src="personalScript.js"></script>
+    <script src="handlerScript.js"></script>
 </body>
 
 </html>
