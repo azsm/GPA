@@ -1,7 +1,6 @@
 $(function() {
         console.log( "ready!" );
 
-
         $('#retrievedRepositoriesList').hide();
 
         // Load the Visualization API and the corechart package.
