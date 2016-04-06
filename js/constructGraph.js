@@ -2,7 +2,7 @@ function loadCharts(repoName) {
     var mapCommitters = {};
     
     requestListRepositories(getRepoCommitsURL(repoName), function(data) {
-        $.each(data.items, function(i, item) {
+        $.each(data.items, function(item) {
             var author = item.author;
             console.log(author); 
             if(author in mapCommitters) {
