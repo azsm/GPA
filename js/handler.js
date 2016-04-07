@@ -1,15 +1,17 @@
 $(function() {
-        console.log( "ready!" );
+    console.log( "ready!" );
 
-        $('#retrievedRepositoriesList').hide();
+    $('#retrievedRepositoriesList').hide();
 
-        // Load the Visualization API and the corechart package.
-        google.charts.load('current', {'packages':['corechart']});
+    // Load the Visualization API and the corechart package.
+    google.charts.load('current', {'packages':['corechart']});
+
+    $('#searchRepository').submit(onSearchRepositorySubmit);
+    $("#retrievedRepositories").click(onSelectRepositoryInList);
 });
 
 
-
-$('#searchRepository').submit(function(event){
+function onSearchRepositorySubmit(e){
     var repoName = $('#repositoryName').val();
     requestListRepositories(getRepoSearchURL(repoName), function(data) {
 	
@@ -28,11 +30,15 @@ $('#searchRepository').submit(function(event){
             alert("Not result found for this entry, please recheck !!");
         }
   	});
-    event.preventDefault();
-});
+
+    window.location.hash = this.hash;
+    $($(this).attr('href')).fadeIn('slow');
+
+    e.preventDefault();
+}
 
 
-$("#retrievedRepositories").click(function() {
+function onSelectRepositoryInList() {
 	var selectedRepo = $('#retrievedRepositoriesList option:selected').val();
     requestListRepositories(getRepoContributorsURL(selectedRepo), function(data) {
         var outhtml = '<p><strong>User List:</strong></p> <ul>';
@@ -50,6 +56,4 @@ $("#retrievedRepositories").click(function() {
   	});
 
     loadCharts(selectedRepo);
-});
-
-
+}

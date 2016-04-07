@@ -9,13 +9,14 @@ function getRepoContributorsURL(name) {
 }
 
 function getRepoCommitsURL(name) {
-    return URL_START + "repos/" + name + "/commits\\?per_page=100";
+    //return URL_START + "repos/" + name + "/commits\\?per_page=100";
+    return URL_START + "repos/" + name + "/commits";
 }
 
 
 function requestListRepositories(url, displayListRepository) {
 	$.get( url )
-		.done( displayListRepository )
+		.done(displayListRepository)
 		.fail(function() {
     		alert( "error contact admin" );
   		});
