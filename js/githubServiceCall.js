@@ -10,7 +10,8 @@ function getRepoContributorsURL(name) {
 
 function getRepoCommitsURL(name) {
     //return URL_START + "repos/" + name + "/commits\\?per_page=100";
-    return URL_START + "repos/" + name + "/commits";
+    return URL_START + "repos/" + name + "/commits?per_page=100";
+   // return URL_START + "repos/" + name + "/commits";
 }
 
 
