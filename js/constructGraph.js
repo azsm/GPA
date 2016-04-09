@@ -1,3 +1,5 @@
+DAY_IN_MILLISECOND = 24 * 60 * 60 * 1000;
+
 function loadCharts(repoName) {
     var mapCommitters  = {};
     var historyCommits = {};
@@ -13,14 +15,13 @@ function loadCharts(repoName) {
                 else {
                     mapCommitters[author] = 1;
                 }
-
             }
            
             var commiter   = item.commit.committer.name;
-            var dateCommit = (new Date(item.commit.committer.date)).setHours(0, 0, 0, 0, 0);
-            console.log("get the date :: " + dateCommit);
+            var dateCommit = new Date(item.commit.committer.date);
+            resetHours(dateCommit); 
             if(commiter in historyCommits) {
-                historyCommits[commiter] = (historyCommits[commiter]).push(dateCommit);//.append(dateCommit);
+                (historyCommits[commiter]).push(dateCommit);
             }
             else {
                 historyCommits[commiter] = [dateCommit];
@@ -31,6 +32,13 @@ function loadCharts(repoName) {
         google.charts.setOnLoadCallback(drawImpactContributorChart(mapCommitters));
 	    google.charts.setOnLoadCallback(drawCommitsTimelineChart(historyCommits));
     });
+}
+
+function resetHours(d) {
+    d.setHours(0);    
+    d.setMilliseconds(0);
+    d.setMinutes(0);
+    d.setSeconds(0);
 }
 
 function drawImpactContributorChart(rows) {
@@ -62,18 +70,28 @@ function drawCommitsTimelineChart(rows) {
     dataTable.addColumn({ type: 'date'  , id: 'end date' });
    
     var listData = [];    
-    $.each(rows, function(i, row) {
-        console.log("work with date :: " + i + " => " + row);    
-        $.each(rows[row], function(d) {
+    $.each(rows, function(commiter, listDate) {
+
+        var nextDate  = listDate[0];
+        var endCommit = listDate[0];
+        $.each(listDate, function(index, d) {
+            console.log("pour " + commiter + " nextDate :: " + nextDate + " , d :: " + d);
+            if((nextDate.getTime() - d.getTime()) > DAY_IN_MILLISECOND) {
+                console.log("more than a day !!");
+                listData.push([commiter, nextDate, endCommit]);
+                endCommit = d;
+            }
+            nextDate = d;
         });
+        listData.push([commiter, nextDate, endCommit]);
     });
 
+    console.log(listData.length);
 
+    dataTable.addRows(listData);
 
-//    dataTable.addRows(rows);
-
-//	var chart = new google.visualization.Timeline(document.getElementById('commitChart'));
-//	chart.draw(dataTable);
+    var chart = new google.visualization.Timeline(document.getElementById('commitChart'));
+    chart.draw(dataTable);
 }
 
 

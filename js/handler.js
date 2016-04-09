@@ -18,16 +18,17 @@ $(function() {
 
     google.charts.load('current', {'packages':['corechart', "timeline"]});
 
-    verifyURLState();
+   // verifyURLState();
 
     $('#searchRepository').submit(function(e) {
         var repoName = $('#repositoryName').val();
         onSearchRepositorySubmit(repoName);
         
         var stateData = { 
-            STATE_INPUT_REPO_VAR : repoName 
+            state_input_repo_var    : repoName, 
+            state_selected_repo_var : ""
         };   
-        var url = "?inputRepo=" + repoName; 
+        var url = "?" + STATE_INPUT_REPO_VAR + "=" + repoName; 
         history.pushState(stateData, PUSH_STATE_TITLE_SEARCH + repoName, url);
         
         e.preventDefault();
@@ -39,10 +40,10 @@ $(function() {
         onSelectRepositoryInList(selectedRepo);
         
         var stateData = { 
-            STATE_INPUT_REPO_VAR    : $('#repositoryName').val(), 
-            STATE_SELECTED_REPO_VAR : selectedRepo
+            state_input_repo_var    : $('#repositoryName').val(), 
+            state_selected_repo_var : selectedRepo
         };    
-        var url = "?inputRepo=" + $('#repositoryName').val() + "&selectedRepo=" + selectedRepo; 
+        var url = "?" + STATE_INPUT_REPO_VAR + "=" + $('#repositoryName').val() + "&" + STATE_SELECTED_REPO_VAR + "=" + selectedRepo; 
         history.pushState(stateData, PUSH_STATE_TITLE_DETAILS + selectedRepo, url);
     });
 
@@ -55,9 +56,26 @@ $(function() {
  * This function get the URL argument and update content
  */
 function verifyURLState() {
-   // get url parametre 
-   // construct a state parameter 
-   // load updateContent 
+    var state_url = {
+        state_input_repo_var    : "",
+        state_selected_repo_var : ""
+    };
+
+    // Split the url 
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i=0;i<vars.length;i++) {
+        var pair = vars[i].split("=");
+        // If first entry with this name
+        if (pair[0] === STATE_INPUT_REPO_VAR) {
+            state_url.state_input_repo_var = pair[1];
+        } 
+        else if (pair[0] === STATE_SELECTED_REPO_VAR) {
+            state_url.state_selected_repo_var = pair[1];
+        } 
+    } 
+   // load updateContent
+   updateContent(state_url); 
 }
 
 /*
@@ -65,20 +83,18 @@ function verifyURLState() {
  * It help to restitute the state
  */
 function updateContent(state) {
-    if(state == null) {
-        console.log("No state !!");
-        hideAllComponent();
+    if(state != null && state.state_input_repo_var != "") {
+        onSearchRepositorySubmit(state.state_input_repo_var);
+        if(state.state_selected_repo_var != "") {
+            onSelectRepositoryInList(state.state_selected_repo_var);
+        }
+        else {
+            $('#repoDetailsPart').hide();
+        }
     }
     else {
-        if(STATE_INPUT_REPO_VAR in state) {
-            onSearchRepository(state[STATE_INPUT_REPO_VAR]);
-            if(STATE_SELECTED_REPO_VAR in state) {
-                onSelectRepositoryInList(state[STATE_SELECTED_REPO_VAR]);
-            }
-            else {
-                $('#repoDetailsPart').hide();
-            }
-        }
+        console.log("No state !! " + state);
+        hideAllComponent();
     }
 }
 
@@ -120,16 +136,16 @@ function onSearchRepositorySubmit(repoName){
  */
 function onSelectRepositoryInList(selectedRepo) {
     requestListRepositories(getRepoContributorsURL(selectedRepo), function(data) {
-        var outhtml = '<p><strong>User List:</strong></p> <ul>';
+        var outhtml = '<p><strong>User List:</strong></p> <p>';
             
         $.each(data, function(i, item) {
 			var contributor = item.author;
-            outhtml = outhtml + '<li><a href="'
+            outhtml = outhtml + '<a href="'
                         + contributor.html_url +'" target="_blank" class="btn btn-info" role="button">'
-                        + contributor.login + '</a></li>';
+                        + contributor.login + '</a>';
         });
             
-		outhtml = outhtml + '</ul></div>'; 
+		outhtml = outhtml + '</p>'; 
 		$('#repoUsers').html(outhtml);
 
   	});
