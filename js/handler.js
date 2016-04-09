@@ -110,6 +110,7 @@ function updateContent(state) {
         }
         else {
             $('#repoDetailsPart').hide();
+			$('#repoCorrespondantGraph').hide();
         }
     }
     else {
@@ -122,8 +123,9 @@ function updateContent(state) {
  * This function hide all page components except the form 
  */
 function hideAllComponent() {
-    $('#retrievedRepositories').hide();
+    $('#retrievedRepositoriesDisplay').hide();
     $('#repoDetailsPart').hide();
+	$('#repoCorrespondantGraph').hide();
 }
 
 /*
@@ -140,10 +142,10 @@ function searchRepositories(repoName){
                     { value: item.full_name, text : item.full_name }
                 ));
 		    });
-            $('#retrievedRepositories').show();
+            $('#retrievedRepositoriesDisplay').show();
         }
         else {
-            $('#retrievedRepositories').hide();
+            $('#retrievedRepositoriesDisplay').hide();
             alert("Not result found for this entry, please recheck !!");
         }
   	});
@@ -155,6 +157,24 @@ function searchRepositories(repoName){
  */
 function getRepoDetails(selectedRepo) {
     $('#repoDetailsPart').show();
+	
+	requestListRepositories(getRepoURL(selectedRepo), function(data) {
+        var outhtml = '<p><strong>Repository description :</strong></p> <div>';
+            
+		outhtml = outhtml + '<table class="table"> <tbody>';
+		outhtml = outhtml + '<tr><td> Name </td><td>' + data.name + '</td></tr>';
+		outhtml = outhtml + '<tr><td> Description </td><td>' + data.description + '</td></tr>';
+		outhtml = outhtml + '<tr><td> Owner </td><td>' + data.owner.login + '</td></tr>';
+		outhtml = outhtml + '</tbody> </table>';
+		outhtml = outhtml + '<a href="' + data.html_url 
+							+'" target="_blank" class="btn btn-link" role="button">'
+                        	+ 'Access to the project on GitHub</a>';            
+		outhtml = outhtml + '</div>';
+
+		$('#repoDescription').html(outhtml);
+
+  	});
+
     requestListRepositories(getRepoContributorsURL(selectedRepo), function(data) {
         var outhtml = '<p><strong>User List:</strong></p> <p>';
             

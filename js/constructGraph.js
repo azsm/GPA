@@ -1,6 +1,8 @@
 DAY_IN_MILLISECOND = 24 * 60 * 60 * 1000;
 
 function loadCharts(repoName) {
+	$('#repoCorrespondantGraph').show();
+
     var mapCommitters  = {};
     var historyCommits = {};
     
