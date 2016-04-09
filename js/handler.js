@@ -9,6 +9,41 @@ STATE_SELECTED_REPO_VAR = "repoName";
 PUSH_STATE_TITLE_SEARCH  = "Find repo : ";
 PUSH_STATE_TITLE_DETAILS = "Repo details : ";
 
+var handlerFactory = {
+    inputRepo : "",
+   
+    initInputRepo : function(v) {
+        handlerFactory.inputRepo = v;
+    },
+
+    onSearchRepositorySubmit : function(e) {
+        handlerFactory.inputRepo = $('#repositoryName').val();
+    
+        searchRepositories(handlerFactory.inputRepo);
+        
+        var stateData = { 
+            state_input_repo_var    : handlerFactory.inputRepo, 
+            state_selected_repo_var : ""
+        };   
+        var url = "?" + STATE_INPUT_REPO_VAR + "=" + handlerFactory.inputRepo; 
+        history.pushState(stateData, PUSH_STATE_TITLE_SEARCH + handlerFactory.inputRepo, url);
+
+        e.preventDefault();
+    },
+
+    onSelectRepository : function(e) {
+	    var selectedRepo = $('#retrievedRepositoriesList option:selected').val();
+        getRepoDetails(selectedRepo);
+        
+        var stateData = { 
+            state_input_repo_var    : handlerFactory.inputRepo, 
+            state_selected_repo_var : selectedRepo
+        };    
+        var url = "?" + STATE_INPUT_REPO_VAR + "=" + handlerFactory.inputRepo  + "&" + STATE_SELECTED_REPO_VAR + "=" + selectedRepo; 
+        history.pushState(stateData, PUSH_STATE_TITLE_DETAILS + selectedRepo, url);
+    }
+};
+
 /*
  * Init the function
  * It s called when the page is load
@@ -18,39 +53,16 @@ $(function() {
 
     google.charts.load('current', {'packages':['corechart', "timeline"]});
 
-   // verifyURLState();
+    verifyURLState();
 
-    $('#searchRepository').submit(function(e) {
-        var repoName = $('#repositoryName').val();
-        onSearchRepositorySubmit(repoName);
-        
-        var stateData = { 
-            state_input_repo_var    : repoName, 
-            state_selected_repo_var : ""
-        };   
-        var url = "?" + STATE_INPUT_REPO_VAR + "=" + repoName; 
-        history.pushState(stateData, PUSH_STATE_TITLE_SEARCH + repoName, url);
-        
-        e.preventDefault();
-    });
-
-
-    $("#retrievedRepositoriesList").dblclick(function(e) {
-	    var selectedRepo = $('#retrievedRepositoriesList option:selected').val();
-        onSelectRepositoryInList(selectedRepo);
-        
-        var stateData = { 
-            state_input_repo_var    : $('#repositoryName').val(), 
-            state_selected_repo_var : selectedRepo
-        };    
-        var url = "?" + STATE_INPUT_REPO_VAR + "=" + $('#repositoryName').val() + "&" + STATE_SELECTED_REPO_VAR + "=" + selectedRepo; 
-        history.pushState(stateData, PUSH_STATE_TITLE_DETAILS + selectedRepo, url);
-    });
+    $('#searchRepository').submit(handlerFactory.onSearchRepositorySubmit);
+    $("#retrievedRepositoriesList").dblclick(handlerFactory.onSelectRepository);
 
     window.addEventListener('popstate', function(event) {
         updateContent(event.state);
     });
 });
+
 
 /*
  * This function get the URL argument and update content
@@ -69,13 +81,13 @@ function verifyURLState() {
         // If first entry with this name
         if (pair[0] === STATE_INPUT_REPO_VAR) {
             state_url.state_input_repo_var = pair[1];
+            handlerFactory.initInputRepo(pair[1]);
         } 
         else if (pair[0] === STATE_SELECTED_REPO_VAR) {
             state_url.state_selected_repo_var = pair[1];
         } 
     } 
-   // load updateContent
-   updateContent(state_url); 
+    updateContent(state_url); 
 }
 
 /*
@@ -83,19 +95,27 @@ function verifyURLState() {
  * It help to restitute the state
  */
 function updateContent(state) {
+    if(state != null) {
+        console.log("State :: state input repo var *" + state.state_input_repo_var + "* et state selected *" + state.state_selected_repo_var + "*");
+    }
+    else {
+        console.log("No state !!")
+    }
     if(state != null && state.state_input_repo_var != "") {
-        onSearchRepositorySubmit(state.state_input_repo_var);
+        $('#repositoryName').val(state.state_input_repo_var);
+        searchRepositories(state.state_input_repo_var);
+
         if(state.state_selected_repo_var != "") {
-            onSelectRepositoryInList(state.state_selected_repo_var);
+            getRepoDetails(state.state_selected_repo_var);
         }
         else {
             $('#repoDetailsPart').hide();
         }
     }
     else {
-        console.log("No state !! " + state);
         hideAllComponent();
     }
+    console.log("get out of this bullshit");
 }
 
 /*
@@ -110,9 +130,8 @@ function hideAllComponent() {
  * Get repo list that match with the entred name from the GitHub server
  * It fill the select "retrievedRepositoriesList" element on index.html 
  */
-function onSearchRepositorySubmit(repoName){
+function searchRepositories(repoName){
     requestListRepositories(getRepoSearchURL(repoName), function(data) {
-	
         $('#retrievedRepositoriesList').empty();
 
         if (data.total_count > 0) {
@@ -121,10 +140,10 @@ function onSearchRepositorySubmit(repoName){
                     { value: item.full_name, text : item.full_name }
                 ));
 		    });
-            $('#retrievedRepositoriesList').show();
+            $('#retrievedRepositories').show();
         }
         else {
-            $('#retrievedRepositoriesList').hide();
+            $('#retrievedRepositories').hide();
             alert("Not result found for this entry, please recheck !!");
         }
   	});
@@ -134,7 +153,8 @@ function onSearchRepositorySubmit(repoName){
  * This function is called when the user select a repository on the list
  * It get the repository committers and ask to load charts
  */
-function onSelectRepositoryInList(selectedRepo) {
+function getRepoDetails(selectedRepo) {
+    $('#repoDetailsPart').show();
     requestListRepositories(getRepoContributorsURL(selectedRepo), function(data) {
         var outhtml = '<p><strong>User List:</strong></p> <p>';
             

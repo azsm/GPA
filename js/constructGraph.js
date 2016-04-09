@@ -75,9 +75,7 @@ function drawCommitsTimelineChart(rows) {
         var nextDate  = listDate[0];
         var endCommit = listDate[0];
         $.each(listDate, function(index, d) {
-            console.log("pour " + commiter + " nextDate :: " + nextDate + " , d :: " + d);
             if((nextDate.getTime() - d.getTime()) > DAY_IN_MILLISECOND) {
-                console.log("more than a day !!");
                 listData.push([commiter, nextDate, endCommit]);
                 endCommit = d;
             }
@@ -86,13 +84,8 @@ function drawCommitsTimelineChart(rows) {
         listData.push([commiter, nextDate, endCommit]);
     });
 
-    console.log(listData.length);
-
     dataTable.addRows(listData);
 
     var chart = new google.visualization.Timeline(document.getElementById('commitChart'));
     chart.draw(dataTable);
 }
-
-
-    
