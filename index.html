@@ -18,7 +18,7 @@
 </head>
 
 <body>
-	<div class="container">
+	<div class="container-fluid">
   		<h1>GitHub Repository Analyser</h1>
 		<br/>
 		<div class="row">
@@ -38,18 +38,21 @@
 				</div>
 			</div>
 
-			<div class="col-sm-6" id="repoDetailsPart">
+			<div class="col-sm-8" id="repoDetailsPart">
 				<h3>Repository details</h3>
 				<div id="repoDescription"></div>
 				<br/>
-				<div id="repoUsers" class="btn-toolbar"></div>
+				<div id="repoUsers"></div>
 			</div>
 		</div>
 
 		<div id="repoCorrespondantGraph">
 			<h3>Repository analyse</h3>
-        	<div id="contributorChart"></div>
-        	<div id="commitChart"></div>
+            <div class="row">
+        	    <div class="col-sm-6" id="contributorChart"></div>
+        	    <div class="col-sm-6" id="languageChart"></div>
+            </div>
+            <div id="commitChart"></div>
     	</div>
 	</div>
 	

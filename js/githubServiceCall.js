@@ -16,6 +16,11 @@ function getRepoCommitsURL(name) {
     return URL_START + "repos/" + name + "/commits?per_page=100";
 }
 
+function getRepoLanguagesURL(name) {
+    return URL_START + "repos/" + name + "/languages";
+}
+
+
 
 function requestListRepositories(url, displayListRepository) {
 	$.get( url )

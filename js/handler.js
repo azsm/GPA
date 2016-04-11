@@ -1,5 +1,4 @@
 // THIS FILE IS USED TO HANDLE UI ENVENT 
-
 /*
  *  Declare constant String
  */ 
@@ -12,21 +11,22 @@ PUSH_STATE_TITLE_DETAILS = "Repo details : ";
 var handlerFactory = {
     inputRepo : "",
    
-    initInputRepo : function(v) {
-        handlerFactory.inputRepo = v;
+    initInputRepo : function(initValue) {
+        handlerFactory.inputRepo = initValue;
     },
 
     onSearchRepositorySubmit : function(e) {
+        hideAllComponents();
         handlerFactory.inputRepo = $('#repositoryName').val();
     
-        searchRepositories(handlerFactory.inputRepo);
+        searchRepositories(handlerFactory.inputRepo, "");
         
         var stateData = { 
             state_input_repo_var    : handlerFactory.inputRepo, 
             state_selected_repo_var : ""
         };   
-        var url = "?" + STATE_INPUT_REPO_VAR + "=" + handlerFactory.inputRepo; 
-        history.pushState(stateData, PUSH_STATE_TITLE_SEARCH + handlerFactory.inputRepo, url);
+        var query = "?" + STATE_INPUT_REPO_VAR + "=" + handlerFactory.inputRepo; 
+        history.pushState(stateData, PUSH_STATE_TITLE_SEARCH + handlerFactory.inputRepo, query);
 
         e.preventDefault();
     },
@@ -39,8 +39,8 @@ var handlerFactory = {
             state_input_repo_var    : handlerFactory.inputRepo, 
             state_selected_repo_var : selectedRepo
         };    
-        var url = "?" + STATE_INPUT_REPO_VAR + "=" + handlerFactory.inputRepo  + "&" + STATE_SELECTED_REPO_VAR + "=" + selectedRepo; 
-        history.pushState(stateData, PUSH_STATE_TITLE_DETAILS + selectedRepo, url);
+        var query = "?" + STATE_INPUT_REPO_VAR + "=" + handlerFactory.inputRepo  + "&" + STATE_SELECTED_REPO_VAR + "=" + selectedRepo; 
+        history.pushState(stateData, PUSH_STATE_TITLE_DETAILS + selectedRepo, query);
     }
 };
 
@@ -49,8 +49,6 @@ var handlerFactory = {
  * It s called when the page is load
 */
 $(function() {
-    console.log( "ready!" );
-
     google.charts.load('current', {'packages':['corechart', "timeline"]});
 
     verifyURLState();
@@ -68,26 +66,29 @@ $(function() {
  * This function get the URL argument and update content
  */
 function verifyURLState() {
-    var state_url = {
+    hideAllComponents();
+    var stateUrl = {
         state_input_repo_var    : "",
         state_selected_repo_var : ""
     };
 
-    // Split the url 
-    var query = window.location.search.substring(1);
-    var vars = query.split("&");
+    var mapQuery = {};
+    var vars = window.location.search.substring(1).split("&");
     for (var i=0;i<vars.length;i++) {
         var pair = vars[i].split("=");
-        // If first entry with this name
-        if (pair[0] === STATE_INPUT_REPO_VAR) {
-            state_url.state_input_repo_var = pair[1];
-            handlerFactory.initInputRepo(pair[1]);
-        } 
-        else if (pair[0] === STATE_SELECTED_REPO_VAR) {
-            state_url.state_selected_repo_var = pair[1];
-        } 
+        mapQuery[pair[0]] = pair[1];
+    }
+        
+    if (STATE_INPUT_REPO_VAR in mapQuery) {
+        stateUrl.state_input_repo_var = mapQuery[STATE_INPUT_REPO_VAR];
+        handlerFactory.initInputRepo(mapQuery[STATE_INPUT_REPO_VAR]);
     } 
-    updateContent(state_url); 
+
+    if (STATE_SELECTED_REPO_VAR in mapQuery) {
+        stateUrl.state_selected_repo_var = mapQuery[STATE_SELECTED_REPO_VAR]; 
+    }
+
+    updateContent(stateUrl); 
 }
 
 /*
@@ -95,15 +96,10 @@ function verifyURLState() {
  * It help to restitute the state
  */
 function updateContent(state) {
-    if(state != null) {
-        console.log("State :: state input repo var *" + state.state_input_repo_var + "* et state selected *" + state.state_selected_repo_var + "*");
-    }
-    else {
-        console.log("No state !!")
-    }
-    if(state != null && state.state_input_repo_var != "") {
+    logStateContent(state);
+    if(state && state.state_input_repo_var != "") {
         $('#repositoryName').val(state.state_input_repo_var);
-        searchRepositories(state.state_input_repo_var);
+        searchRepositories(state.state_input_repo_var, state.state_selected_repo_var);
 
         if(state.state_selected_repo_var != "") {
             getRepoDetails(state.state_selected_repo_var);
@@ -114,15 +110,27 @@ function updateContent(state) {
         }
     }
     else {
-        hideAllComponent();
+        $('#repositoryName').val('');
+        hideAllComponents();
     }
-    console.log("get out of this bullshit");
+}
+
+/*
+ * log function
+ */
+function logStateContent(state) {
+    if(state != null) {
+       console.log("State :: state input repo var *" + state.state_input_repo_var + "* et state selected *" + state.state_selected_repo_var + "*");
+    }
+    else {
+        console.log("No state !!")
+    }
 }
 
 /*
  * This function hide all page components except the form 
  */
-function hideAllComponent() {
+function hideAllComponents() {
     $('#retrievedRepositoriesDisplay').hide();
     $('#repoDetailsPart').hide();
 	$('#repoCorrespondantGraph').hide();
@@ -132,7 +140,7 @@ function hideAllComponent() {
  * Get repo list that match with the entred name from the GitHub server
  * It fill the select "retrievedRepositoriesList" element on index.html 
  */
-function searchRepositories(repoName){
+function searchRepositories(repoName, choosedRepo){
     requestListRepositories(getRepoSearchURL(repoName), function(data) {
         $('#retrievedRepositoriesList').empty();
 
@@ -143,6 +151,10 @@ function searchRepositories(repoName){
                 ));
 		    });
             $('#retrievedRepositoriesDisplay').show();
+
+            if($("#retrievedRepositoriesList option[value='" + choosedRepo + "']").length > 0) {
+                $("#retrievedRepositoriesList").val(choosedRepo);
+            }
         }
         else {
             $('#retrievedRepositoriesDisplay').hide();
@@ -159,7 +171,7 @@ function getRepoDetails(selectedRepo) {
     $('#repoDetailsPart').show();
 	
 	requestListRepositories(getRepoURL(selectedRepo), function(data) {
-        var outhtml = '<p><strong>Repository description :</strong></p> <div>';
+        var outhtml = '<h5>Repository description :</h5><div>';
             
 		outhtml = outhtml + '<table class="table"> <tbody>';
 		outhtml = outhtml + '<tr><td> Name </td><td>' + data.name + '</td></tr>';
@@ -176,16 +188,16 @@ function getRepoDetails(selectedRepo) {
   	});
 
     requestListRepositories(getRepoContributorsURL(selectedRepo), function(data) {
-        var outhtml = '<p><strong>User List:</strong></p> <p>';
+        var outhtml = '<h5>User List:</h5> <div>';
             
         $.each(data, function(i, item) {
 			var contributor = item.author;
             outhtml = outhtml + '<a href="'
-                        + contributor.html_url +'" target="_blank" class="btn btn-info" role="button">'
+                        + contributor.html_url +'" target="_blank" class="btn btn-link" role="button">'
                         + contributor.login + '</a>';
         });
             
-		outhtml = outhtml + '</p>'; 
+		outhtml = outhtml + '</div>'; 
 		$('#repoUsers').html(outhtml);
 
   	});
