@@ -2,18 +2,21 @@ DAY_IN_MILLISECOND = 24 * 60 * 60 * 1000;
 
 function loadCharts(repoName) {
 	$('#repoCorrespondantGraph').show();
-
-    var mapCommitters  = {};
-    var historyCommits = {};
-    var languageProportions = [];
    
     requestListRepositories(getRepoLanguagesURL(repoName), function(data) {
+        var languageProportions = [];
         $.each(data, function(i, item) {
             languageProportions.push([i, item]);
+        });
+        
+        google.charts.setOnLoadCallback(function() {
+            drawLanguageProportionUse(languageProportions);
         });
     });
 
     requestListRepositories(getRepoCommitsURL(repoName), function(data) {
+        var mapCommitters  = {};
+        var historyCommits = {};
         $.each(data, function(i, item) {
             if(item.author) {
                 var author = item.author.login;
@@ -29,10 +32,6 @@ function loadCharts(repoName) {
             else {
                 historyCommits[committer] = [dateCommit];
             }
-        });
-    
-        google.charts.setOnLoadCallback(function() {
-            drawLanguageProportionUse(languageProportions);
         });
 
         google.charts.setOnLoadCallback(function() {
@@ -112,14 +111,14 @@ function drawCommitsTimelineChart(rows) {
     });
     dataTable.addRows(listData);
 
-    var paddingHeight = 40;
+    var paddingHeight = 50;
     var rowHeight = dataTable.getNumberOfRows() * 20;
     var chartHeight = rowHeight + paddingHeight;
 
     var options = {
-        'title'  : 'User commit Timeline based on the last 100 commits',
-        'tooltip': { isHtml: true },
-        'height' : chartHeight
+        title  : 'User commit Timeline based on the last 100 commits',
+        tooltip: { isHtml: true },
+        height : chartHeight
     };
 
     var chart = new google.visualization.Timeline(document.getElementById('commitChart'));

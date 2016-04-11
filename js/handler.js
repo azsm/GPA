@@ -194,7 +194,7 @@ function getRepoDetails(selectedRepo) {
 			var contributor = item.author;
             outhtml = outhtml + '<a href="'
                         + contributor.html_url +'" target="_blank" class="btn btn-link" role="button">'
-                        + contributor.login + '</a>';
+                        + contributor.login + '</a> <span>&bull;</span> ';
         });
             
 		outhtml = outhtml + '</div>'; 
